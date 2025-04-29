@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { View, StyleSheet } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { db } from "../config/firebaseConfig";
 import { getDocs, collection } from "firebase/firestore";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function CalendarScreen({ navigation }) {
   const [markedDates, setMarkedDates] = useState({});
+
   const fetchSavedMeals = async () => {
     const mealsRef = collection(db, "meals");
     const querySnapshot = await getDocs(mealsRef);
@@ -15,21 +17,23 @@ export default function CalendarScreen({ navigation }) {
       const mealDate = doc.id;
       mealsData[mealDate] = {
         marked: true,
-        dotColor: "green", // Change dot color to show meal presence
+        dotColor: "green",
         activeOpacity: 0.8,
       };
     });
 
     setMarkedDates(mealsData);
   };
-  useEffect(() => {
-    fetchSavedMeals();
-  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchSavedMeals();
+    }, [])
+  );
 
   const handleDayPress = (day) => {
     navigation.navigate("MealEditor", {
       mealDate: day.dateString,
-      refreshMeals: fetchSavedMeals, // Pass it here
     });
   };
 
