@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  StyleSheet,
-  Picker,
-} from "react-native";
+import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { db } from "../config/firebaseConfig";
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import { deleteDoc } from "firebase/firestore";
 
 export default function MealEditorScreen({ route, navigation }) {
   const { mealDate } = route.params;
@@ -59,6 +53,16 @@ export default function MealEditorScreen({ route, navigation }) {
     }
   };
 
+  const deleteMeal = async () => {
+    try {
+      await deleteDoc(doc(db, "meals", mealDate));
+      alert("Meal deleted!");
+      navigation.goBack(); // Go back to Calendar
+    } catch (error) {
+      console.error("Error deleting meal:", error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Meal for {mealDate}</Text>
@@ -106,6 +110,7 @@ export default function MealEditorScreen({ route, navigation }) {
       />
 
       <Button title="Save Meals" onPress={saveMeals} />
+      <Button title="Delete Meal" color="red" onPress={deleteMeal} />
     </View>
   );
 }
