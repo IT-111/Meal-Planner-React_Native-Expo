@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { db } from "../config/firebaseConfig";
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import * as Notifications from 'expo-notifications';  // Import Notifications
 import { deleteDoc } from "firebase/firestore";
 
 export default function MealEditorScreen({ route, navigation }) {
@@ -14,6 +15,17 @@ export default function MealEditorScreen({ route, navigation }) {
   const [breakfastTime, setBreakfastTime] = useState("08:00 AM");
   const [lunchTime, setLunchTime] = useState("12:00 PM");
   const [dinnerTime, setDinnerTime] = useState("07:00 PM");
+
+  // Request permission for notifications
+  useEffect(() => {
+    const requestPermissions = async () => {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Permission to send notifications was denied');
+      }
+    };
+    requestPermissions();
+  }, []);
 
   useEffect(() => {
     if (mealDate) {
@@ -42,6 +54,11 @@ export default function MealEditorScreen({ route, navigation }) {
         dinner: { meal: dinner, time: dinnerTime },
       });
 
+      // Schedule notifications
+      await scheduleNotification(breakfastTime, "Breakfast");
+      await scheduleNotification(lunchTime, "Lunch");
+      await scheduleNotification(dinnerTime, "Dinner");
+
       if (route.params.refreshMeals) {
         await route.params.refreshMeals(); // <-- Refresh calendar
       }
@@ -51,6 +68,35 @@ export default function MealEditorScreen({ route, navigation }) {
     } catch (error) {
       console.error("Error saving meals:", error);
     }
+  };
+
+  // Schedule notification at the specified time
+  const scheduleNotification = async (time, mealType) => {
+    const date = new Date();
+    const [hour, minute] = time.split(":");
+    let [adjustedHour, adjustedMinute] = [parseInt(hour), parseInt(minute)];
+
+    // Handling AM/PM conversion
+    if (time.includes("PM") && adjustedHour !== 12) {
+      adjustedHour += 12; // Convert PM hours to 24-hour format
+    }
+    if (time.includes("AM") && adjustedHour === 12) {
+      adjustedHour = 0; // Convert 12 AM to 0 hours
+    }
+
+    date.setHours(adjustedHour, adjustedMinute, 0); // Set the date and time
+
+    const notificationId = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: `${mealType} Reminder`,
+        body: `It's time for your ${mealType}!`,
+      },
+      trigger: { 
+        date: date, 
+      },
+    });
+
+    console.log(`Notification scheduled with ID: ${notificationId}`);
   };
 
   const deleteMeal = async () => {
