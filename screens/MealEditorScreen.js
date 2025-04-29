@@ -1,52 +1,109 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import { db } from "../config/firebaseConfig";
+import { View, Text, TextInput, Button, StyleSheet, Picker } from "react-native";
+import { db } from "../config/firebaseConfig"; 
 import { doc, setDoc, getDoc } from "firebase/firestore";
 
 export default function MealEditorScreen({ route, navigation }) {
-  const { mealId, mealName, mealDate, refreshMeals } = route.params; // Get refreshMeals callback
-  const [meal, setMeal] = useState(mealName || "");
+  const { mealDate } = route.params;
   
+  // Initialize state for each meal and time
+  const [breakfast, setBreakfast] = useState("");
+  const [lunch, setLunch] = useState("");
+  const [dinner, setDinner] = useState("");
+  const [breakfastTime, setBreakfastTime] = useState("08:00 AM");
+  const [lunchTime, setLunchTime] = useState("12:00 PM");
+  const [dinnerTime, setDinnerTime] = useState("07:00 PM");
+
   useEffect(() => {
-    // If mealId exists, fetch the existing meal details
-    if (mealId) {
+    if (mealDate) {
+      // Fetch existing meal details for the specific day
       const loadMeal = async () => {
-        const docRef = doc(db, "meals", mealId);
+        const docRef = doc(db, "meals", mealDate);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setMeal(docSnap.data().meal);
+          const data = docSnap.data();
+          setBreakfast(data.breakfast.meal);
+          setLunch(data.lunch.meal);
+          setDinner(data.dinner.meal);
+          setBreakfastTime(data.breakfast.time);
+          setLunchTime(data.lunch.time);
+          setDinnerTime(data.dinner.time);
         }
       };
       loadMeal();
     }
-  }, [mealId]);
+  }, [mealDate]);
 
-  const saveMeal = async () => {
-    // Save the meal using mealId or mealDate as document ID
-    const idToSave = mealId || mealDate;
+  const saveMeals = async () => {
     try {
-      await setDoc(doc(db, "meals", idToSave), {
-        meal,
-        date: mealDate,
+      await setDoc(doc(db, "meals", mealDate), {
+        breakfast: {
+          meal: breakfast,
+          time: breakfastTime,
+        },
+        lunch: {
+          meal: lunch,
+          time: lunchTime,
+        },
+        dinner: {
+          meal: dinner,
+          time: dinnerTime,
+        },
       });
-      alert("Meal saved!");
-      refreshMeals(); // Refresh the meals list after saving
+      alert("Meals saved!");
       navigation.goBack(); // Go back to the previous screen
     } catch (error) {
-      console.error("Error saving meal:", error);
+      console.error("Error saving meals:", error);
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Meal for {mealDate}</Text>
+
+      {/* Breakfast Meal */}
       <TextInput
-        placeholder="Enter meal..."
-        value={meal}
-        onChangeText={setMeal}
+        placeholder="Enter breakfast..."
+        value={breakfast}
+        onChangeText={setBreakfast}
         style={styles.input}
       />
-      <Button title="Save Meal" onPress={saveMeal} />
+      <TextInput
+        placeholder="Enter breakfast time..."
+        value={breakfastTime}
+        onChangeText={setBreakfastTime}
+        style={styles.input}
+      />
+
+      {/* Lunch Meal */}
+      <TextInput
+        placeholder="Enter lunch..."
+        value={lunch}
+        onChangeText={setLunch}
+        style={styles.input}
+      />
+      <TextInput
+        placeholder="Enter lunch time..."
+        value={lunchTime}
+        onChangeText={setLunchTime}
+        style={styles.input}
+      />
+
+      {/* Dinner Meal */}
+      <TextInput
+        placeholder="Enter dinner..."
+        value={dinner}
+        onChangeText={setDinner}
+        style={styles.input}
+      />
+      <TextInput
+        placeholder="Enter dinner time..."
+        value={dinnerTime}
+        onChangeText={setDinnerTime}
+        style={styles.input}
+      />
+
+      <Button title="Save Meals" onPress={saveMeals} />
     </View>
   );
 }
@@ -54,5 +111,5 @@ export default function MealEditorScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, marginTop: 50 },
   title: { fontSize: 20, marginBottom: 10 },
-  input: { borderWidth: 1, padding: 10, marginBottom: 20 },
+  input: { borderWidth: 1, padding: 10, marginBottom: 10 },
 });

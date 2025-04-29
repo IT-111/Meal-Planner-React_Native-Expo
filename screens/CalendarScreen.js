@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { db } from "../config/firebaseConfig";  // Firebase config
+import { db } from "../config/firebaseConfig";  
 import { getDocs, collection } from "firebase/firestore";
 
 export default function CalendarScreen({ navigation }) {
@@ -17,8 +17,8 @@ export default function CalendarScreen({ navigation }) {
         const mealDate = doc.id;
         mealsData[mealDate] = {
           marked: true,
-          selectedColor: 'green', // You can change the color here
-          selectedTextColor: 'white', // You can change the text color here
+          dotColor: 'green', // Change dot color to show meal presence
+          activeOpacity: 0.8,
         };
       });
 
@@ -26,10 +26,9 @@ export default function CalendarScreen({ navigation }) {
     };
 
     fetchSavedMeals();
-  }, []);  // Empty dependency array ensures this runs once on component mount
+  }, []);
 
   const handleDayPress = (day) => {
-    // Ensure mealId or mealDate is passed correctly
     navigation.navigate("MealEditor", { mealDate: day.dateString });
   };
 

@@ -3,17 +3,7 @@ import { View, Text, FlatList, StyleSheet } from "react-native";
 import { db } from "../config/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 
-// Function to format date to "Jan 1, 2025"
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
-
-export default function MealListScreen({ navigation }) {
+export default function MealListScreen() {
   const [meals, setMeals] = useState([]);
 
   useEffect(() => {
@@ -22,8 +12,7 @@ export default function MealListScreen({ navigation }) {
         const querySnapshot = await getDocs(collection(db, "meals"));
         const mealsArray = querySnapshot.docs.map((doc) => ({
           id: doc.id,
-          meal: doc.data().meal,
-          date: doc.data().date,
+          meals: doc.data(),
         }));
         setMeals(mealsArray);
       } catch (error) {
@@ -34,6 +23,13 @@ export default function MealListScreen({ navigation }) {
     fetchMeals();
   }, []);
 
+  const renderMealItem = (mealType, mealData) => (
+    <View style={styles.item}>
+      <Text style={styles.mealText}>{mealType}</Text>
+      <Text>{mealData.meal} at {mealData.time}</Text>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Saved Meals</Text>
@@ -42,8 +38,10 @@ export default function MealListScreen({ navigation }) {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.item}>
-            <Text style={styles.mealText}>{item.meal}</Text>
-            <Text style={styles.dateText}>{formatDate(item.date)}</Text> {/* Format date */}
+            <Text style={styles.dateText}>{item.id}</Text>
+            {renderMealItem("Breakfast", item.meals.breakfast)}
+            {renderMealItem("Lunch", item.meals.lunch)}
+            {renderMealItem("Dinner", item.meals.dinner)}
           </View>
         )}
       />
