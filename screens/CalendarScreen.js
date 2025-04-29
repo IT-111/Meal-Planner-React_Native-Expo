@@ -1,35 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { db } from "../config/firebaseConfig";  
+import { db } from "../config/firebaseConfig";
 import { getDocs, collection } from "firebase/firestore";
 
 export default function CalendarScreen({ navigation }) {
   const [markedDates, setMarkedDates] = useState({});
+  const fetchSavedMeals = async () => {
+    const mealsRef = collection(db, "meals");
+    const querySnapshot = await getDocs(mealsRef);
+    const mealsData = {};
 
+    querySnapshot.forEach((doc) => {
+      const mealDate = doc.id;
+      mealsData[mealDate] = {
+        marked: true,
+        dotColor: "green", // Change dot color to show meal presence
+        activeOpacity: 0.8,
+      };
+    });
+
+    setMarkedDates(mealsData);
+  };
   useEffect(() => {
-    const fetchSavedMeals = async () => {
-      const mealsRef = collection(db, "meals");
-      const querySnapshot = await getDocs(mealsRef);
-      const mealsData = {};
-      
-      querySnapshot.forEach((doc) => {
-        const mealDate = doc.id;
-        mealsData[mealDate] = {
-          marked: true,
-          dotColor: 'green', // Change dot color to show meal presence
-          activeOpacity: 0.8,
-        };
-      });
-
-      setMarkedDates(mealsData);
-    };
-
     fetchSavedMeals();
   }, []);
 
   const handleDayPress = (day) => {
-    navigation.navigate("MealEditor", { mealDate: day.dateString });
+    navigation.navigate("MealEditor", {
+      mealDate: day.dateString,
+      refreshMeals: fetchSavedMeals, // Pass it here
+    });
   };
 
   return (
