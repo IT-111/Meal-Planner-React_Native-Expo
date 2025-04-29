@@ -1,32 +1,61 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { View, Text, FlatList, Button, StyleSheet } from "react-native";
 import { db } from "../config/firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 
-export default function MealListScreen() {
+export default function MealListScreen({ navigation }) {
   const [meals, setMeals] = useState([]);
 
-  useEffect(() => {
-    const fetchMeals = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "meals"));
-        const mealsArray = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          meals: doc.data(),
-        }));
-        setMeals(mealsArray);
-      } catch (error) {
-        console.error("Error fetching meals: ", error);
-      }
-    };
+  // Function to fetch the meals from Firestore
+  const fetchMeals = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "meals"));
+      const mealsArray = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        meals: doc.data(),
+      }));
+      setMeals(mealsArray); // Set the meals state to update the UI
+    } catch (error) {
+      console.error("Error fetching meals: ", error);
+    }
+  };
 
+  // Fetch meals when the component mounts or when meals data is changed
+  useEffect(() => {
     fetchMeals();
   }, []);
+
+  // Handle the edit action
+  const handleEdit = (mealDate) => {
+    navigation.navigate("MealEditor", { mealDate, refreshMeals: fetchMeals });
+  };
+
+  // Handle the delete action
+  const handleDelete = async (mealDate) => {
+    try {
+      await deleteDoc(doc(db, "meals", mealDate)); // Delete meal from Firestore
+      alert("Meal deleted!");
+      fetchMeals(); // Re-fetch meals after deleting
+    } catch (error) {
+      console.error("Error deleting meal: ", error);
+    }
+  };
 
   const renderMealItem = (mealType, mealData) => (
     <View style={styles.item}>
       <Text style={styles.mealText}>{mealType}</Text>
       <Text>{mealData.meal} at {mealData.time}</Text>
+    </View>
+  );
+
+  const renderItem = ({ item }) => (
+    <View style={styles.item}>
+      <Text style={styles.dateText}>{item.id}</Text>
+      {renderMealItem("Breakfast", item.meals.breakfast)}
+      {renderMealItem("Lunch", item.meals.lunch)}
+      {renderMealItem("Dinner", item.meals.dinner)}
+      <Button title="Edit" onPress={() => handleEdit(item.id)} />
+      <Button title="Delete" color="red" onPress={() => handleDelete(item.id)} />
     </View>
   );
 
@@ -36,14 +65,7 @@ export default function MealListScreen() {
       <FlatList
         data={meals}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text style={styles.dateText}>{item.id}</Text>
-            {renderMealItem("Breakfast", item.meals.breakfast)}
-            {renderMealItem("Lunch", item.meals.lunch)}
-            {renderMealItem("Dinner", item.meals.dinner)}
-          </View>
-        )}
+        renderItem={renderItem}
       />
     </View>
   );
