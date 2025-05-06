@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { db } from "../config/firebaseConfig";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import * as Notifications from 'expo-notifications';  // Import Notifications
+import * as Notifications from "expo-notifications"; // Import Notifications
 import { deleteDoc } from "firebase/firestore";
 
 export default function MealEditorScreen({ route, navigation }) {
@@ -20,8 +20,8 @@ export default function MealEditorScreen({ route, navigation }) {
   useEffect(() => {
     const requestPermissions = async () => {
       const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Permission to send notifications was denied');
+      if (status !== "granted") {
+        alert("Permission to send notifications was denied");
       }
     };
     requestPermissions();
@@ -72,31 +72,29 @@ export default function MealEditorScreen({ route, navigation }) {
 
   // Schedule notification at the specified time
   const scheduleNotification = async (time, mealType) => {
+    const now = new Date();
     const date = new Date();
-    const [hour, minute] = time.split(":");
-    let [adjustedHour, adjustedMinute] = [parseInt(hour), parseInt(minute)];
 
-    // Handling AM/PM conversion
-    if (time.includes("PM") && adjustedHour !== 12) {
-      adjustedHour += 12; // Convert PM hours to 24-hour format
+    const [hourString, minutePart] = time.split(":");
+    const minute = parseInt(minutePart);
+    let hour = parseInt(hourString);
+
+    if (time.toLowerCase().includes("pm") && hour < 12) hour += 12;
+    if (time.toLowerCase().includes("am") && hour === 12) hour = 0;
+
+    date.setHours(hour, minute, 0, 0);
+
+    if (date <= now) {
+      date.setDate(date.getDate() + 1); // Push to next day if time already passed
     }
-    if (time.includes("AM") && adjustedHour === 12) {
-      adjustedHour = 0; // Convert 12 AM to 0 hours
-    }
 
-    date.setHours(adjustedHour, adjustedMinute, 0); // Set the date and time
-
-    const notificationId = await Notifications.scheduleNotificationAsync({
+    await Notifications.scheduleNotificationAsync({
       content: {
         title: `${mealType} Reminder`,
-        body: `It's time for your ${mealType}!`,
+        body: `Time to eat ${mealType}`,
       },
-      trigger: { 
-        date: date, 
-      },
+      trigger: date,
     });
-
-    console.log(`Notification scheduled with ID: ${notificationId}`);
   };
 
   const deleteMeal = async () => {
