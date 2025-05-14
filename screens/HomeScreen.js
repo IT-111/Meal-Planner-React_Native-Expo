@@ -1,79 +1,29 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, Button, StyleSheet } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+export default function HomeScreen() {
+  const navigation = useNavigation();
 
-export default function HomeScreen({ navigation }) {
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>🍽️ Meal Planner</Text>
-
-      <NavButton
-        icon="calendar-outline"
-        label="Open Calendar"
+    <View style={styles.container}>
+      <Text style={styles.title}>Meal Planner</Text>
+      <Button
+        title="Open Calendar"
         onPress={() => navigation.navigate("Calendar")}
       />
-      <NavButton
-        icon="settings-outline"
-        label="Settings"
+      <Button
+        title="Settings"
         onPress={() => navigation.navigate("Settings")}
       />
-      <NavButton
-        icon="restaurant-outline"
-        label="View All Meals"
+      <Button
+        title="View All Meals"
         onPress={() => navigation.navigate("MealList")}
       />
-    </SafeAreaView>
-  );
-}
-
-function NavButton({ icon, label, onPress }) {
-  return (
-    <TouchableOpacity style={styles.button} onPress={onPress}>
-      <Ionicons name={icon} size={24} color="#fff" />
-      <Text style={styles.buttonText}>{label}</Text>
-    </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f1fdf5",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    marginBottom: 40,
-    color: "#2d6a4f",
-  },
-  button: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#40916c",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginVertical: 10,
-    width: "80%",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    marginLeft: 10,
-    fontWeight: "600",
-  },
+  container: { flex: 1, justifyContent: "center", alignItems: "center" },
+  title: { fontSize: 24, marginBottom: 20 },
 });
