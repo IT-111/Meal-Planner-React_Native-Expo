@@ -5,11 +5,11 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   Alert,
   ImageBackground,
+  Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { db } from "../config/firebaseConfig";
 import { collection, doc, setDoc, getDoc, deleteDoc } from "firebase/firestore";
@@ -17,7 +17,7 @@ import * as Notifications from "expo-notifications";
 import BottomNav from "../components/BottomNav";
 import background from "../assets/image.png";
 
-// Ensure notification handler is set
+// Notification handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -96,10 +96,20 @@ export default function MealEditorScreen({ route, navigation }) {
   });
 
   return (
-    <ImageBackground source={background} style={styles.background}>
-      <View style={styles.overlay}>
+    <ImageBackground
+      source={background}
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+      >
+      <View style={styles.header}>
+      <Text style={styles.title}>Meals for {formattedDate}</Text>
+    </View>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.title}>Meals for {formattedDate}</Text>
+       
 
           <View style={styles.card}>
             <Text style={styles.label}>Breakfast</Text>
@@ -141,7 +151,7 @@ export default function MealEditorScreen({ route, navigation }) {
         </ScrollView>
 
         <BottomNav current="MealList" />
-      </View>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 }
@@ -149,36 +159,43 @@ export default function MealEditorScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    width: "100%",
+    height: "100%",
   },
-  overlay: {
+  container: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
   },
   scrollContent: {
     flexGrow: 1,
     padding: 20,
   },
-  title: {
-    fontSize: 30,
-    fontWeight: "bold",
-    color: "#fff",
-    textAlign: "center",
-    marginVertical: 20,
-    // Removed deprecated boxShadow
-    elevation: 5, // Added elevation for Android shadow
-    shadowColor: "#000", // Added shadow properties for iOS
+  header: {
+    backgroundColor: "rgba(76, 175, 80, 0.9)",
+    padding: 25,
+    alignItems: "center",
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowRadius: 8,
+    elevation: 8,
+    marginBottom: 20,
   },
+  title: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#fff",
+    textAlign: "center",
+  },
+
   card: {
     backgroundColor: "#fff",
     borderRadius: 15,
     padding: 18,
     marginBottom: 25,
-    // Removed boxShadow
-    elevation: 5, // Added elevation for Android shadow
-    shadowColor: "#000", // Added shadow properties for iOS
+    elevation: 5,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
@@ -196,9 +213,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     marginBottom: 15,
-    // Removed boxShadow
-    elevation: 5, // Added elevation for Android shadow
-    shadowColor: "#4CAF50", // Shadow color for iOS
+    elevation: 5,
+    shadowColor: "#4CAF50",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
@@ -208,9 +224,8 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 12,
     alignItems: "center",
-    // Removed boxShadow
-    elevation: 5, // Added elevation for Android shadow
-    shadowColor: "#f44336", // Shadow color for iOS
+    elevation: 5,
+    shadowColor: "#f44336",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
