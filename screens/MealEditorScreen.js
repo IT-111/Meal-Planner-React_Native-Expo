@@ -71,6 +71,15 @@ export default function MealEditorScreen({ route, navigation }) {
         lunch: { meal: lunch, time: lunchTime },
         dinner: { meal: dinner, time: dinnerTime },
       });
+      // Alert.alert("Success", "Your meal(s) have been saved successfully!");
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Meal Saved ✅",
+          body: `Your meals for ${mealDate} have been saved successfully!`,
+          sound: "default",
+        },
+        trigger: null, // triggers immediately
+      });
       Alert.alert("Success", "Your meal(s) have been saved successfully!");
       navigation.goBack();
     } catch (error) {
@@ -105,12 +114,10 @@ export default function MealEditorScreen({ route, navigation }) {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
-      <View style={styles.header}>
-      <Text style={styles.title}>Meals for {formattedDate}</Text>
-    </View>
+        <View style={styles.header}>
+          <Text style={styles.title}>Meals for {formattedDate}</Text>
+        </View>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-       
-
           <View style={styles.card}>
             <Text style={styles.label}>Breakfast</Text>
             <TextInput
